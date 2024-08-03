@@ -107,7 +107,7 @@ public function destroy($id){
 //con id se busca un dato
 // con request se agrega un nuevo dato
 
-public function update(Request$request, $id){
+public function update(Request $request, $id){
 
     $student = Student::find($id);
 
@@ -152,6 +152,7 @@ public function update(Request$request, $id){
     ];
     return response()->json($data, 200);
 }
+
 public function updatePartial(Request $request, $id) {
     $student = Student::find($id);
 
