@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
@@ -29,7 +30,7 @@ class StudentController extends Controller
             'name' => 'required|max:255',
             'email' => 'required|email|unique:student',
             'phone' => 'required|digits:10',
-            'languaje' => 'required|in:English,Spanish,French'
+            'language' => 'required|in:English,Spanish,French'
         ]);
 
         // Si la validación falla
@@ -59,160 +60,161 @@ class StudentController extends Controller
         ], 201);
     }
 
-//funcion para obtener un solo estudiante
-public function show($id){
+    //funcion para obtener un solo estudiante
+    public function show($id)
+    {
 
-    //se va a buscar en el modelo metodo find
-    $student = Student::find($id);
+        //se va a buscar en el modelo metodo find
+        $student = Student::find($id);
 
-    //si no encontraste es retorna un json
-    if (!$student) {
+        //si no encontraste es retorna un json
+        if (!$student) {
+            $data = [
+                'message' => 'Estudiante no encontrado',
+                'status' => 404
+            ];
+            return response()->json($data, 404);
+        }
+
+        //caso contrario vas a retornar esto
         $data = [
-            'message' => 'Estudiante no encontrado',
-            'status' => 404
+            'student' => $student,
+            'status' => 200
         ];
-        return response()->json($data, 404);
+        //esto se retrna al cliente
+        return response()->json($data, 200);
     }
 
-    //caso contrario vas a retornar esto
-    $data = [
-        'student' => $student,
-        'status' => 200
-    ];
-    //esto se retrna al cliente
-    return response()->json($data, 200);
-}
+    //funcion para eliminar
+    public function destroy($id)
+    {
 
-//funcion para eliminar
-public function destroy($id){
+        $student = Student::find($id);
 
-    $student = Student::find($id);
-
-    if (!$student) {
+        if (!$student) {
+            $data = [
+                'message' => 'Estudiante no encontrado',
+                'status' => 404
+            ];
+            return response()->json($data, 404);
+        }
+        $student->delete();
         $data = [
-            'message' => 'Estudiante no encontrado',
-            'status' => 404
+            'message' => 'Estudiante eliminado',
+            'status' => 200
         ];
-        return response() -> json($data, 404);
-    }
-    $student->delete();
-    $data = [
-        'message' => 'Estudiante eliminado',
-        'status' => 200
-    ];
-    return response()->json($data, 200);
-
-}
-
-//con id se busca un dato
-// con request se agrega un nuevo dato
-
-public function update(Request $request, $id){
-
-    $student = Student::find($id);
-
-    //si no se encuentra al estudiante
-    if (!$student) {
-        $data = [
-            'message'=>'Estudiante no encontrado',
-            'status' => 404
-        ];
-        return response()->json($data, 404);
-    }
-    $validator = Validator::make($request->all(),[
-        'name'=>'required|max:250',
-        'email' => 'required|email|unique:student',
-        'phone' => 'required|digits:10',
-        'languaje' => 'required|in:English,Spanish,French'
-    ]);
-
-    //si el validator falla
-    if (!$validator) {
-        $data = [
-            'message'=>'Error en la validación de los datos',
-            'status' => 400
-        ];
-        return response()->json($validator, 400);
+        return response()->json($data, 200);
     }
 
-    //si los hace bien
-    $student->name = $request->name;
-    $student->email = $request->email;
-    $student->phone = $request->phone;
-    $student->languaje = $request->languaje;
-    
-    $student->save();
+    //con id se busca un dato
+    // con request se agrega un nuevo dato
 
-    //estudiante actualizado
+    public function update(Request $request, $id)
+    {
 
-    $data = [
-        'message'=>'estudiante actualizado',
-        'student' => $student,
-        'status'=> 200
-    ];
-    return response()->json($data, 200);
-}
+        $student = Student::find($id);
 
-public function updatePartial(Request $request, $id) {
-    $student = Student::find($id);
+        //si no se encuentra al estudiante
+        if (!$student) {
+            $data = [
+                'message' => 'Estudiante no encontrado',
+                'status' => 404
+            ];
+            return response()->json($data, 404);
+        }
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|max:250',
+            'email' => 'required|email|unique:student',
+            'phone' => 'required|digits:10',
+            'language' => 'required|in:English,Spanish,French'
+        ]);
 
-    if (!$student) {
-        $data = [
-            'message' => 'Estudiante no encontrado',
-            'status' => 404
-        ];
-        return response()->json($data, 404);
-    }
+        //si el validator falla
+        if (!$validator) {
+            $data = [
+                'message' => 'Error en la validación de los datos',
+                'status' => 400
+            ];
+            return response()->json($validator, 400);
+        }
 
-    // Validación de los datos
-    $validator = Validator::make($request->all(), [
-        'name' => 'max:255',
-        'email' => 'email|unique:student,email,'.$id, // Asegúrate de excluir el email del estudiante actual
-        'phone' => 'digits:10',
-        'languaje' => 'in:English,Spanish,French'
-    ]);
-
-    // Si el validador falla
-    if ($validator->fails()) {
-        $data = [
-            'message' => 'Error en la validación de los datos',
-            'errors' => $validator->errors(),
-            'status' => 400
-        ];
-        return response()->json($data, 400);
-    }
-
-    // Actualizar solo los campos recibidos
-    if ($request->has('name')) {
+        //si los hace bien
         $student->name = $request->name;
-    }
-    if ($request->has('email')) {
         $student->email = $request->email;
-    }
-    if ($request->has('phone')) {
         $student->phone = $request->phone;
+        $student->language = $request->language;
+
+        $student->save();
+
+        //estudiante actualizado
+
+        $data = [
+            'message' => 'estudiante actualizado',
+            'student' => $student,
+            'status' => 200
+        ];
+        return response()->json($data, 200);
     }
-    if ($request->has('languaje')) {
-        $student->languaje = $request->languaje;
+
+    public function updatePartial(Request $request, $id)
+    {
+        $student = Student::find($id);
+
+        if (!$student) {
+            $data = [
+                'message' => 'Estudiante no encontrado',
+                'status' => 404
+            ];
+            return response()->json($data, 404);
+        }
+
+        // Validación de los datos
+        $validator = Validator::make($request->all(), [
+            'name' => 'max:255',
+            'email' => 'email|unique:student,email,' . $id, // Asegúrate de excluir el email del estudiante actual
+            'phone' => 'digits:10',
+            'language' => 'in:English,Spanish,French'
+        ]);
+
+        // Si el validador falla
+        if ($validator->fails()) {
+            $data = [
+                'message' => 'Error en la validación de los datos',
+                'errors' => $validator->errors(),
+                'status' => 400
+            ];
+            return response()->json($data, 400);
+        }
+
+        // Actualizar solo los campos recibidos
+        if ($request->has('name')) {
+            $student->name = $request->name;
+        }
+        if ($request->has('email')) {
+            $student->email = $request->email;
+        }
+        if ($request->has('phone')) {
+            $student->phone = $request->phone;
+        }
+        if ($request->has('language')) {
+            $student->language = $request->language;
+        }
+
+        $student->save();
+        // // Campos permitidos para actualización
+        // $fields = ['name', 'email', 'phone', 'languaje'];
+
+        // foreach ($fields as $field) {
+        //     if ($request->has($field)) {
+        //         $student->$field = $request->$field;
+        //     }
+        // }
+
+        $data = [
+            'message' => 'Estudiante actualizado',
+            'student' => $student,
+            'status' => 200
+        ];
+        return response()->json($data, 200);
     }
-
-    $student->save();
-    // // Campos permitidos para actualización
-    // $fields = ['name', 'email', 'phone', 'languaje'];
-
-    // foreach ($fields as $field) {
-    //     if ($request->has($field)) {
-    //         $student->$field = $request->$field;
-    //     }
-    // }
-
-    $data = [
-        'message' => 'Estudiante actualizado',
-        'student' => $student,
-        'status' => 200
-    ];
-    return response()->json($data, 200);
-}
-
-
 }

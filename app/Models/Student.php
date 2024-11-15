@@ -17,7 +17,6 @@ class Student extends Model
         'name',
         'email',
         'phone',
-        'languaje' // Cambiado a 'languaje'
+        'language' // Cambiado a 'languaje'
     ];
 }
-
